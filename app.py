@@ -12,7 +12,9 @@ app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:///database.db"
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-db = SQLAlchemy(app)
+db = SQLAlchemy()
+
+db.init_app(app)
 
 @dataclass
 class PERSONA(db.Model):
@@ -22,7 +24,7 @@ class PERSONA(db.Model):
     username: str
     password: str
 
-    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    id = db.Column(db.Integer, primary_key=True)
     correo = db.Column(db.String(100), nullable=False)
     username = db.Column(db.String(100), nullable=False, unique=True)
     password = db.Column(db.String(100), nullable=False)
@@ -77,8 +79,7 @@ class STICKER(db.Model):
     FechaSubida:str
     S_CREADOR_id: int
     
-
-    idsticker = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    idsticker = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(100), nullable=False)
     descripcion = db.Column(db.String(100), nullable=False)
     categoria = db.Column(db.String(100), nullable=False)
@@ -98,7 +99,7 @@ class CARRITO(db.Model):
 
     idcarrito:int
 
-    idcarrito = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    idcarrito = db.Column(db.Integer, primary_key=True)
 
     CAR_USUARIO_id = db.Column(db.Integer, db.ForeignKey("USUARIO.usuario_id"), primary_key=True)
     rcarritoo_usuario = relationship("USUARIO", backref="CARRITO")
@@ -114,7 +115,7 @@ class COMENTARIO(db.Model):
     COM_STICKER_id: int
     texto: str
 
-    idcomentario = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    idcomentario = db.Column(db.Integer, primary_key=True)
     texto = db.Column(db.String(100), nullable=False)
 
     COM_STICKER_id = db.Column(db.Integer, db.ForeignKey("STICKER.idsticker"), primary_key=True)
@@ -141,7 +142,6 @@ class PUBLICA(db.Model):
 
     r_sticker_publica= relationship("COMENTARIO", backref="PUBLICA")
     r_persona_publica = relationship("PERSONA", backref="PUBLICA")
-
 
 @dataclass
 class PERTENECE(db.Model):
@@ -173,7 +173,6 @@ def insert_creador(data):
 
 with app.app_context():
     db.create_all()
-
 
 CORS(app)
 
@@ -233,7 +232,6 @@ def route_usuarios():
         db.session.add(usuario)
         db.session.commit()
         return "SUCCESS"
-
 
 @app.route("/carritos/<carritos_id>", methods=["GET"])
 def route_carritos_id(carritos_id):
@@ -308,39 +306,6 @@ def route_stickers_creador_id(creador_id):
         db.session.add(sticker)
         db.session.commit()
         return jsonify(sticker)
-
-
-
-# def route_stickers_creador_id(creador_id):
-#     cache = {}
-
-#     if request.method=="GET":
-#         key = "getStickers"
-#         if key not in cache.keys():
-#             dbResponse = STICKER.query.filter_by(S_CREADOR_id=creador_id).all()
-#             cache[key] = dbResponse;
-#             print("From DB")
-#         else:
-#             print("From Cache")
-    
-#         stickers = cache[key];
-#         response = ""
-#         for sticker in stickers:
-#             response += sticker.nombre+";"+sticker.descripcion+";"+sticker.categoria+";"+sticker.likes+";"+sticker.Foto+";"+sticker.FechaSubida
-#         return jsonify(response)
-
-#     elif request.method == "POST":
-#         data = request.get_json()
-#         sticker = STICKER(nombre=data["nombre"],descripcion=data["descripcion"], categoria=data["categoria"], likes = 0, Foto=data["Foto"], FechaSubida=func.now(), S_CREADOR_id = creador_id)
-#         db.session.add(sticker)
-#         db.session.commit()
-#         return "SUCCESS"
-#     elif request.method == "DELETE":
-#         filas = STICKER.query.filter_by(S_CREADOR_id=creador_id).all()
-#         for fila in filas:
-#             db.session.delete(fila)
-#         db.commit()
-#         return "SUCCESS"
 
 @app.route("/register-user", methods=["GET", "POST"])
 def registeruser():
